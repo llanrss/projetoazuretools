@@ -1,9 +1,7 @@
 {
-    "java.compile.nullAnalysis.mode": "automatic",
-    "azureFunctions.deploySubpath": "azure",
+    "azureFunctions.deploySubpath": "projetoazuretools-main\\azure",
     "azureFunctions.scmDoBuildDuringDeployment": true,
     "azureFunctions.projectLanguage": "Python",
     "azureFunctions.projectRuntime": "~4",
-    "debug.internalConsoleOptions": "neverOpen",
-    "azureFunctions.projectLanguageModel": 2
+    "debug.internalConsoleOptions": "neverOpen"
 }

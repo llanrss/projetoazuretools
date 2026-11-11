@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Visão executiva · Receita</title>
+<style>
+  :root {
+    --bg: #0f0f12;
+    --card: #18181c;
+    --card-2: #1f1f24;
+    --line: #2c2c33;
+    --text: #f4f4f6;
+    --muted: #9b9ba6;
+    --violet: #8b7cf6;
+    --violet-soft: #b9b0fc;
+    --orange: #d9904f;
+    --green: #5fd3a0;
+    --red: #ef6f66;
+    --bar-off: #55555f;
+    --font: "Inter", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f5f5f8; --card: #ffffff; --card-2: #f0f0f5; --line: #dcdce4;
+      --text: #17171c; --muted: #5f5f6b; --violet: #6a58e6; --violet-soft: #5646c9;
+      --orange: #b86a22; --green: #14845a; --red: #c8372e; --bar-off: #b9b9c4;
+      color-scheme: light;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f5f5f8; --card: #ffffff; --card-2: #f0f0f5; --line: #dcdce4;
+    --text: #17171c; --muted: #5f5f6b; --violet: #6a58e6; --violet-soft: #5646c9;
+    --orange: #b86a22; --green: #14845a; --red: #c8372e; --bar-off: #b9b9c4;
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: 1rem; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--font); line-height: 1.5; -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 1120px; margin: 0 auto; padding: 28px 20px 48px; }
+
+  header.top { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: flex-end; justify-content: space-between; }
+  h1 { margin: 0; font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.1rem); letter-spacing: -0.02em; line-height: 1.15; }
+  .question { margin: 6px 0 0; color: var(--muted); font-size: 0.98rem; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .controls label { display: flex; flex-direction: column; gap: 3px; font-size: 0.78rem; color: var(--muted); }
+  select, .theme {
+    font: inherit; font-size: 0.92rem; color: var(--text); background: var(--card);
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; min-height: 40px;
+  }
+  select { min-width: 140px; }
+  .theme { cursor: pointer; align-self: flex-end; }
+  select:focus-visible, .theme:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+  .badge { align-self: flex-end; font-family: var(--mono); font-size: 0.75rem; color: var(--muted); padding: 10px 0; }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 24px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .kpi .rotulo { color: var(--muted); font-size: 0.85rem; }
+  .kpi .valor { font-size: clamp(1.7rem, 1.2rem + 1.4vw, 2.2rem); font-weight: 700; letter-spacing: -0.03em; line-height: 1.15; margin: 4px 0 6px; }
+  .kpi .delta { font-family: var(--mono); font-size: 0.82rem; }
+  .bom { color: var(--green); }
+  .ruim { color: var(--red); }
+  .neutro { color: var(--muted); }
+
+  .graficos { display: grid; grid-template-columns: 1.25fr 1fr; gap: 14px; margin-top: 14px; }
+  .painel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  .painel h2 { margin: 0 0 12px; font-size: 1rem; font-weight: 600; }
+  svg { display: block; width: 100%; height: auto; }
+  .eixo, .rot { fill: var(--muted); font-family: var(--mono); font-size: 11px; }
+  .grade { stroke: var(--line); stroke-width: 1; }
+  .linha-orc { stroke: var(--muted); stroke-width: 2; stroke-dasharray: 5 4; fill: none; }
+  .linha-real { stroke: var(--violet); stroke-width: 2.5; fill: none; stroke-linejoin: round; }
+  .ponto { fill: var(--violet-soft); stroke: var(--bg); stroke-width: 2; }
+  .rot-real { fill: var(--violet-soft); }
+
+  .barras { display: grid; gap: 12px; }
+  .barra { display: grid; grid-template-columns: 96px 1fr 38px; align-items: center; gap: 10px; font-size: 0.9rem; }
+  .trilho { height: 16px; background: var(--card-2); border-radius: 6px; overflow: hidden; }
+  .preench { height: 100%; background: var(--bar-off); border-radius: 6px; }
+  .barra.destaque .preench { background: linear-gradient(90deg, var(--violet), var(--violet-soft)); }
+  .barra .num { font-family: var(--mono); text-align: right; color: var(--muted); font-size: 0.85rem; }
+
+  .leitura { margin-top: 22px; background: var(--card); border: 1px solid var(--line); border-left: 3px solid var(--violet); border-radius: 12px; padding: 16px 20px; }
+  .leitura h2 { margin: 0 0 8px; font-size: 0.98rem; }
+  .leitura ol { margin: 0; padding-left: 1.2rem; display: grid; gap: 4px; color: var(--muted); font-size: 0.92rem; }
+  .leitura strong { color: var(--text); }
+
+  .erro { margin-top: 24px; padding: 16px; border: 1px solid var(--red); border-radius: 12px; color: var(--red); }
+
+  @media (max-width: 900px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .graficos { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .kpis { grid-template-columns: 1fr; }
+    .barra { grid-template-columns: 84px 1fr 34px; }
+    select { min-width: 0; width: 100%; }
+    .controls label { flex: 1 1 130px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <div>
+      <h1>Visão executiva · Receita</h1>
+      <p class="question">Estamos no caminho da meta de receita?</p>
+    </div>
+    <div class="controls">
+      <label>Período
+        <select id="periodo" aria-label="Período"></select>
+      </label>
+      <label>Região
+        <select id="regiao" aria-label="Região"></select>
+      </label>
+      <button class="theme" id="tema" type="button">Alternar tema</button>
+      <span class="badge" id="aviso"></span>
+    </div>
+  </header>
+
+  <main id="conteudo" aria-live="polite">
+    <section class="kpis" id="kpis" aria-label="Indicadores principais"></section>
+
+    <section class="graficos">
+      <div class="painel">
+        <h2>Realizado vs orçado (12 meses)</h2>
+        <div id="grafico-linha"></div>
+      </div>
+      <div class="painel">
+        <h2 id="titulo-barras">Receita por região (R$ mi)</h2>
+        <div class="barras" id="barras"></div>
+      </div>
+    </section>
+
+    <section class="leitura">
+      <h2>Como ler este painel</h2>
+      <ol>
+        <li><strong>Indicadores no topo.</strong> Valor grande, variação e cor: verde melhora, vermelho piora.</li>
+        <li><strong>Filtros visíveis.</strong> Período e região ficam no cabeçalho.</li>
+        <li><strong>Tendência com meta.</strong> A linha do realizado contra o orçado conta a história.</li>
+        <li><strong>Barras ordenadas.</strong> Da maior para a menor, com um destaque só.</li>
+      </ol>
+    </section>
+  </main>
+</div>
+
+<script>
+(function () {
+  var NS = "http://www.w3.org/2000/svg";
+  var nf1 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  var nf2 = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  var nf0 = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 0 });
+
+  var dados = null;
+  var estado = { mes: 0, regiao: "Todas" };
+
+  function el(nome, attrs, texto) {
+    var e = document.createElementNS(NS, nome);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    if (texto != null) e.textContent = texto;
+    return e;
+  }
+
+  function mostrarErro(msg) {
+    var c = document.getElementById("conteudo");
+    c.innerHTML = "";
+    var d = document.createElement("div");
+    d.className = "erro";
+    d.textContent = msg;
+    c.appendChild(d);
+  }
+
+  function dinheiroMi(v) { return "R$ " + (v < 1 ? nf2.format(v) : nf1.format(v)) + " mi"; }
+
+  function kpi(rotulo, valor, delta, classe) {
+    var d = document.createElement("div");
+    d.className = "kpi";
+    var a = document.createElement("div"); a.className = "rotulo"; a.textContent = rotulo;
+    var b = document.createElement("div"); b.className = "valor"; b.textContent = valor;
+    var c = document.createElement("div"); c.className = "delta " + classe; c.textContent = delta;
+    d.appendChild(a); d.appendChild(b); d.appendChild(c);
+    return d;
+  }
+
+  function variacao(atual, anterior) {
+    if (anterior == null || anterior === 0) return null;
+    return (atual / anterior - 1) * 100;
+  }
+
+  function renderKpis() {
+    var s = dados.series[estado.regiao], i = estado.mes, p = i - 1;
+    var box = document.getElementById("kpis");
+    box.innerHTML = "";
+
+    var rec = s.realizado[i];
+    var vRec = p >= 0 ? variacao(rec, s.realizado[p]) : null;
+    box.appendChild(kpi("Receita", dinheiroMi(rec),
+      vRec == null ? "sem mês anterior" : (vRec >= 0 ? "▲ " : "▼ ") + nf1.format(Math.abs(vRec)) + "% vs mês ant.",
+      vRec == null ? "neutro" : (vRec >= 0 ? "bom" : "ruim")));
+
+    var meta = Math.round(rec / s.orcado[i] * 100);
+    var lacuna = 100 - meta;
+    box.appendChild(kpi("Meta atingida", meta + "%",
+      lacuna > 0 ? "▼ " + lacuna + " p.p. da meta" : lacuna < 0 ? "▲ " + Math.abs(lacuna) + " p.p. acima da meta" : "na meta",
+      lacuna > 0 ? "ruim" : lacuna < 0 ? "bom" : "neutro"));
+
+    var tk = s.ticket[i];
+    var vTk = p >= 0 ? variacao(tk, s.ticket[p]) : null;
+    box.appendChild(kpi("Ticket médio", "R$ " + nf0.format(tk),
+      vTk == null ? "sem mês anterior" : (vTk >= 0 ? "▲ " : "▼ ") + nf1.format(Math.abs(vTk)) + "% vs mês ant.",
+      vTk == null ? "neutro" : (vTk >= 0 ? "bom" : "ruim")));
+
+    var ina = s.inadimplencia[i];
+    var dIna = p >= 0 ? Math.round((ina - s.inadimplencia[p]) * 10) / 10 : null;
+    box.appendChild(kpi("Inadimplência", nf1.format(ina) + "%",
+      dIna == null ? "sem mês anterior"
+        : dIna > 0 ? "▲ " + nf1.format(dIna) + " p.p. (piorou)"
+        : dIna < 0 ? "▼ " + nf1.format(Math.abs(dIna)) + " p.p. (melhorou)" : "estável",
+      dIna == null || dIna === 0 ? "neutro" : (dIna > 0 ? "ruim" : "bom")));
+  }
+
+  function renderLinha() {
+    var s = dados.series[estado.regiao];
+    var W = 600, H = 230, ml = 40, mr = 84, mt = 14, mb = 28;
+    var todos = s.realizado.concat(s.orcado);
+    var min = Math.min.apply(null, todos), max = Math.max.apply(null, todos);
+    var folga = (max - min) * 0.12 || 0.1;
+    min = Math.max(0, min - folga); max = max + folga;
+    var n = s.realizado.length;
+    function x(i) { return ml + (W - ml - mr) * i / (n - 1); }
+    function y(v) { return mt + (H - mt - mb) * (1 - (v - min) / (max - min)); }
+    function caminho(arr) { return arr.map(function (v, i) { return (i ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1); }).join(" "); }
+
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, role: "img" });
+    var i = estado.mes;
+    svg.setAttribute("aria-label", "Receita realizada contra orçada nos últimos 12 meses, região " + estado.regiao +
+      ". Em " + dados.meses[i] + ": realizado " + nf1.format(s.realizado[i]) + " milhões, orçado " + nf1.format(s.orcado[i]) + " milhões.");
+
+    for (var g = 0; g <= 3; g++) {
+      var v = min + (max - min) * g / 3, yy = y(v);
+      svg.appendChild(el("line", { class: "grade", x1: ml, x2: W - mr, y1: yy, y2: yy }));
+      svg.appendChild(el("text", { class: "eixo", x: ml - 6, y: yy + 4, "text-anchor": "end" }, nf1.format(v)));
+    }
+    [0, Math.floor((n - 1) / 2), n - 1].forEach(function (k) {
+      svg.appendChild(el("text", { class: "eixo", x: x(k), y: H - 8, "text-anchor": k === 0 ? "start" : k === n - 1 ? "end" : "middle" }, dados.meses[k]));
+    });
+    svg.appendChild(el("path", { class: "linha-orc", d: caminho(s.orcado) }));
+    svg.appendChild(el("path", { class: "linha-real", d: caminho(s.realizado) }));
+    svg.appendChild(el("text", { class: "rot", x: x(n - 1) + 8, y: y(s.orcado[n - 1]) + 4 }, "Orçado"));
+    svg.appendChild(el("text", { class: "rot rot-real", x: x(n - 1) + 8, y: y(s.realizado[n - 1]) + 4 }, "Realizado"));
+    svg.appendChild(el("circle", { class: "ponto", cx: x(i), cy: y(s.realizado[i]), r: 5 }));
+
+    var box = document.getElementById("grafico-linha");
+    box.innerHTML = "";
+    box.appendChild(svg);
+  }
+
+  function renderBarras() {
+    var i = estado.mes;
+    var lista = dados.regioes.filter(function (r) { return r !== "Todas"; }).map(function (r) {
+      return { nome: r, valor: dados.series[r].realizado[i] };
+    }).sort(function (a, b) { return b.valor - a.valor; });
+    var maior = lista[0].valor || 1;
+    var destaque = estado.regiao !== "Todas" ? estado.regiao : lista[0].nome;
+
+    document.getElementById("titulo-barras").textContent = "Receita por região (R$ mi) · " + dados.meses[i];
+    var box = document.getElementById("barras");
+    box.innerHTML = "";
+    lista.forEach(function (r) {
+      var linha = document.createElement("div");
+      linha.className = "barra" + (r.nome === destaque ? " destaque" : "");
+      var nome = document.createElement("span"); nome.textContent = r.nome;
+      var trilho = document.createElement("div"); trilho.className = "trilho";
+      var pre = document.createElement("div"); pre.className = "preench"; pre.style.width = (r.valor / maior * 100).toFixed(1) + "%";
+      trilho.appendChild(pre);
+      var num = document.createElement("span"); num.className = "num"; num.textContent = nf1.format(r.valor);
+      linha.appendChild(nome); linha.appendChild(trilho); linha.appendChild(num);
+      box.appendChild(linha);
+    });
+  }
+
+  function render() { renderKpis(); renderLinha(); renderBarras(); }
+
+  function preencherFiltros() {
+    var sp = document.getElementById("periodo"), sr = document.getElementById("regiao");
+    dados.meses.forEach(function (m, i) {
+      var o = document.createElement("option"); o.value = i; o.textContent = m; sp.appendChild(o);
+    });
+    dados.regioes.forEach(function (r) {
+      var o = document.createElement("option"); o.value = r; o.textContent = r === "Todas" ? "Todas" : r; sr.appendChild(o);
+    });
+    estado.mes = dados.meses.length - 1;
+    sp.value = String(estado.mes);
+    sr.value = estado.regiao;
+    sp.addEventListener("change", function () { estado.mes = parseInt(sp.value, 10); render(); });
+    sr.addEventListener("change", function () { estado.regiao = sr.value; render(); });
+    document.getElementById("aviso").textContent = dados.aviso || "";
+  }
+
+  document.getElementById("tema").addEventListener("click", function () {
+    var raiz = document.documentElement;
+    var atual = raiz.getAttribute("data-theme") ||
+      (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+    raiz.setAttribute("data-theme", atual === "dark" ? "light" : "dark");
+  });
+
+  fetch("dados")
+    .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(function (d) { dados = d; preencherFiltros(); render(); })
+    .catch(function () {
+      mostrarErro("Não foi possível carregar os dados. Confira se a função “dados” está no ar e recarregue a página.");
+    });
+})();
+</script>
+</body>
+</html>
